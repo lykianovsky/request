@@ -1,15 +1,26 @@
 {
-  "name": "request",
+  "name": "requestify-lite",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.*.js",
   "scripts": {
     "dev": "nodemon --watch webpack.config.ts --exec \"webpack --config webpack.config.ts\"",
-    "build": "webpack --config webpack.config.ts",
+    "build": "vite build",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
     "lint:fix": "eslint . --ext .ts --fix",
-    "test": "jest"
+    "test": "jest",
+    "release": "npm version patch && npm run build && npm publish"
   },
+  "exports": {
+    ".": {
+      "import": "dist/index.*.js",
+      "require": "dist/index.*.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -27,10 +38,13 @@
     "jest-environment-node": "^29.7.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.4.2",
+    "terser-webpack-plugin": "^5.3.11",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
+    "vite": "^6.0.7",
+    "vite-plugin-dts": "^4.5.0",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1"
   }

@@ -2,6 +2,8 @@
   "name": "requestify-lite",
   "version": "1.0.1",
   "main": "dist/index.*.js",
+  "module": "dist/index.*.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "dev": "nodemon --watch webpack.config.ts --exec \"webpack --config webpack.config.ts\"",
     "build": "vite build",
@@ -14,7 +16,8 @@
   "exports": {
     ".": {
       "import": "dist/index.*.js",
-      "require": "dist/index.*.js"
+      "require": "dist/index.*.js",
+      "types": "dist/index.d.ts"
     }
   },
   "files": [
@@ -47,5 +50,8 @@
     "vite-plugin-dts": "^4.5.0",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "requestify-lite": "^1.0.1"
   }
 }

@@ -1,5 +1,6 @@
 import path from 'path'
 import {Configuration} from 'webpack'
+import {CleanWebpackPlugin} from 'clean-webpack-plugin'
 
 const config: Configuration = {
   entry: './src/index.ts',
@@ -9,6 +10,11 @@ const config: Configuration = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
+    alias: {
+      '@rest/*': path.resolve(__dirname, 'src/rest'),
+      '@utils/*': path.resolve(__dirname, 'src/utils'),
+      '@internal-types/*': path.resolve(__dirname, 'src/types'),
+    },
   },
   module: {
     rules: [
@@ -19,6 +25,7 @@ const config: Configuration = {
       },
     ],
   },
+  plugins: [new CleanWebpackPlugin()],
   mode: 'production',
 }
 

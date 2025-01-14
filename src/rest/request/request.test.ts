@@ -43,4 +43,22 @@ describe('request', () => {
       }),
     ).rejects.toEqual([mockResponse, undefined])
   })
+
+  it('handles errors from custom handlers response', async () => {
+    const mockResponse = new Response(null, {status: 404})
+
+    ;(fetch as jest.Mock).mockResolvedValueOnce(mockResponse)
+
+    await expect(
+      request({
+        url: MOCK_URL,
+        options: {method: 'GET'},
+        errorHandlers: {
+          404: () => {
+            throw new Error('custom error')
+          },
+        },
+      }),
+    ).rejects.toThrowError('custom error')
+  })
 })

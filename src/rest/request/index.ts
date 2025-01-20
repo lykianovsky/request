@@ -1,6 +1,15 @@
 import {StatusHandlersMap} from '@rest/request/interceptions/catch/global-handler'
 import {interceptCatch} from '@rest/request/interceptions/catch'
 import {parse} from '@rest/request/parse'
+import {executeExchanges} from '@rest/request/exchanges'
+import {
+  GlobalRequestExchanges,
+  RequestExchange,
+} from '@rest/request/exchanges/request'
+import {
+  GlobalResponseExchanges,
+  ResponseExchange,
+} from '@rest/request/exchanges/response'
 
 /**
  * Функция для принятия решения о дальнейшей обработке запроса на основе его статуса.
@@ -30,6 +39,10 @@ type RequestArguments = {
   options?: RequestInit
   /** Маппинг обработчиков ошибок по статусу, которые будут вызваны при ошибке */
   errorHandlers?: StatusHandlersMap
+  exchanges?: {
+    request: RequestExchange[]
+    response: ResponseExchange[]
+  }
 }
 
 /**
@@ -38,6 +51,7 @@ type RequestArguments = {
  * @param url URL для выполнения запроса.
  * @param options Опции запроса, такие как метод, заголовки и другие параметры.
  * @param errorHandlers Маппинг обработчиков ошибок для различных HTTP-статусных кодов.
+ * @param exchanges Маппинг обработчиков, которые будут изменять данные RequestInit (перед выполнением) либо Response (после выполнения)
  *
  * @returns Промис, который разрешается в параметры запроса.
  *
@@ -80,14 +94,31 @@ type RequestArguments = {
  * fetchData();
  *
  */
-export const request = <T>({
+export async function request<T>({
   url,
   options,
+  exchanges,
   errorHandlers,
-}: RequestArguments): Promise<HttpRequestParameters<T>> =>
-  fetch(url, options)
+}: RequestArguments): Promise<HttpRequestParameters<T>> {
+  let cloneOptions = {...options}
+
+  if (cloneOptions) {
+    cloneOptions = await executeExchanges(
+      [...GlobalRequestExchanges, ...(exchanges?.request ?? [])],
+      cloneOptions,
+    )
+  }
+
+  return fetch(url, cloneOptions)
     .then(parse)
     .then(decide)
+    .then(async (response) => {
+      return await executeExchanges(
+        [...GlobalResponseExchanges, ...(exchanges?.response ?? [])],
+        response,
+      )
+    })
     .catch((error: HttpRequestParameters) =>
       interceptCatch(error, errorHandlers),
     )
+}

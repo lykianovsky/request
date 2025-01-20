@@ -1,3 +1,5 @@
 export {request} from '@rest/request'
 export {HttpStatusCode} from '@internal-types/enum/http-status-code'
 export {GlobalErrorHandlers} from '@rest/request/interceptions/catch/global-handler'
+export {GlobalResponseExchanges} from '@rest/request/exchanges/response'
+export {GlobalRequestExchanges} from '@rest/request/exchanges/request'

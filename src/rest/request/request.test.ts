@@ -1,4 +1,6 @@
 import {request} from '@rest/request/index'
+import {GlobalRequestExchanges} from '@rest/request/exchanges/request'
+import {GlobalResponseExchanges} from '@rest/request/exchanges/response'
 
 global.fetch = jest.fn()
 
@@ -60,5 +62,112 @@ describe('request', () => {
         },
       }),
     ).rejects.toThrowError('custom error')
+  })
+
+  it('handle request exchange', async () => {
+    const mockBody = {data: 'success'}
+
+    const mockResponse = new Response(JSON.stringify(mockBody), {
+      status: 200,
+      headers: {'Content-Type': 'application/json'},
+    })
+
+    ;(fetch as jest.Mock).mockResolvedValueOnce(mockResponse)
+
+    GlobalRequestExchanges.add((a) => {
+      return {
+        ...a,
+        headers: {
+          authorization: 'token',
+        },
+      }
+    })
+
+    const [response, result] = await request({
+      url: MOCK_URL,
+      options: {
+        method: 'GET',
+        headers: {
+          ...mockResponse.headers,
+        },
+      },
+    })
+
+    expect(fetch).toHaveBeenCalledWith(MOCK_URL, {
+      method: 'GET',
+      headers: {
+        authorization: 'token',
+      },
+    })
+    expect(response.ok).toBe(true) // Проверяем ключевые свойства ответа
+    expect(result).toEqual(mockBody) // Проверяем данные
+  })
+
+  it('handle request with async exchange', async () => {
+    const mockBody = {data: 'success'}
+
+    const mockResponse = new Response(JSON.stringify(mockBody), {
+      status: 200,
+      headers: {'Content-Type': 'application/json'},
+    })
+
+    ;(fetch as jest.Mock).mockResolvedValueOnce(mockResponse)
+
+    GlobalRequestExchanges.add(async (req) => {
+      return {
+        ...req,
+        headers: {
+          async_authorization: 'token',
+        },
+      }
+    })
+
+    const [response, result] = await request({
+      url: MOCK_URL,
+      options: {
+        method: 'GET',
+        headers: {
+          ...mockResponse.headers,
+        },
+      },
+    })
+
+    expect(fetch).toHaveBeenCalledWith(MOCK_URL, {
+      method: 'GET',
+      headers: {
+        async_authorization: 'token',
+      },
+    })
+    expect(response.ok).toBe(true) // Проверяем ключевые свойства ответа
+    expect(result).toEqual(mockBody) // Проверяем данные
+  })
+
+  it('handle response exchange', async () => {
+    const mockBody = {data: 'success'}
+
+    const mockResponse = new Response(JSON.stringify(mockBody), {
+      status: 200,
+      headers: {'Content-Type': 'application/json'},
+    })
+
+    ;(fetch as jest.Mock).mockResolvedValueOnce(mockResponse)
+
+    GlobalResponseExchanges.add(([response]) => {
+      return [response, 'test']
+    })
+
+    const [response, result] = await request({
+      url: MOCK_URL,
+      options: {
+        method: 'GET',
+        headers: {
+          ...mockResponse.headers,
+        },
+      },
+    })
+
+    console.log(response)
+    expect(response.ok).toBe(true) // Проверяем ключевые свойства ответа
+    expect(result).toEqual('test') // Проверяем данные
   })
 })

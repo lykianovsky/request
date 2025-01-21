@@ -2,14 +2,8 @@ import {StatusHandlersMap} from '@rest/request/interceptions/catch/global-handle
 import {interceptCatch} from '@rest/request/interceptions/catch'
 import {parse} from '@rest/request/parse'
 import {executeExchanges} from '@rest/request/exchanges'
-import {
-  GlobalRequestExchanges,
-  RequestExchange,
-} from '@rest/request/exchanges/request'
-import {
-  GlobalResponseExchanges,
-  ResponseExchange,
-} from '@rest/request/exchanges/response'
+import {RequestExchange} from '@rest/request/exchanges/request'
+import {ResponseExchange} from '@rest/request/exchanges/response'
 
 /**
  * Функция для принятия решения о дальнейшей обработке запроса на основе его статуса.
@@ -40,8 +34,8 @@ type RequestArguments = {
   /** Маппинг обработчиков ошибок по статусу, которые будут вызваны при ошибке */
   errorHandlers?: StatusHandlersMap
   exchanges?: {
-    request: RequestExchange[]
-    response: ResponseExchange[]
+    request?: RequestExchange[]
+    response?: ResponseExchange[]
   }
 }
 
@@ -61,15 +55,6 @@ type RequestArguments = {
  * import { GlobalErrorHandlers } from '@rest/request/interceptions/catch/global-handler';
  * import { HttpStatusCode } from '@internal-types/enum/http-status-code';
  *
- * // Кастомный обработчик для 404 ошибки
- * const custom404Handler = (parameters: HttpRequestParameters) => {
- *   const [response] = parameters;
- *   console.error('Ошибка 404: Ресурс не найден', response);
- *   return Promise.resolve([response, null] as const); // Возвращаем параметры с ошибкой или null
- * };
- *
- * // Регистрация кастомного обработчика для 404 ошибки
- * GlobalErrorHandlers.set(HttpStatusCode.NOT_FOUND, custom404Handler);
  *
  * // Запрос, который может вернуть ошибку 404
  * const fetchData = async () => {
@@ -102,21 +87,19 @@ export async function request<T>({
 }: RequestArguments): Promise<HttpRequestParameters<T>> {
   let cloneOptions = {...options}
 
-  if (cloneOptions) {
-    cloneOptions = await executeExchanges(
-      [...GlobalRequestExchanges, ...(exchanges?.request ?? [])],
-      cloneOptions,
-    )
+  if (cloneOptions && exchanges?.request) {
+    cloneOptions = await executeExchanges(exchanges.request, cloneOptions)
   }
 
   return fetch(url, cloneOptions)
     .then(parse)
     .then(decide)
     .then(async (response) => {
-      return await executeExchanges(
-        [...GlobalResponseExchanges, ...(exchanges?.response ?? [])],
-        response,
-      )
+      if (exchanges?.response) {
+        return await executeExchanges(exchanges.response, response)
+      }
+
+      return response
     })
     .catch((error: HttpRequestParameters) =>
       interceptCatch(error, errorHandlers),

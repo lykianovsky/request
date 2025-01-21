@@ -1,9 +1,6 @@
 import {isResponse} from '@utils/guards/types'
 import {type HttpStatusCode} from '@internal-types/enum/http-status-code'
-import {
-  GlobalErrorHandlers,
-  type StatusHandlersMap,
-} from '@rest/request/interceptions/catch/global-handler'
+import {type StatusHandlersMap} from '@rest/request/interceptions/catch/global-handler'
 
 /**
  * Функция для перехвата и обработки ошибок, связанных с HTTP-запросами.
@@ -31,14 +28,6 @@ export const interceptCatch = (
     if (customHandler) {
       // Если кастомный обработчик найден, вызываем его
       throw customHandler(parameters)
-    }
-
-    // Если кастомного обработчика нет, пытаемся найти глобальный обработчик
-    const globalHandler = GlobalErrorHandlers.get(responseStatus)
-
-    if (globalHandler) {
-      // Если глобальный обработчик найден, вызываем его
-      throw globalHandler(parameters)
     }
   }
 

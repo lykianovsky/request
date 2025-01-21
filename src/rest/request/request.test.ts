@@ -1,6 +1,6 @@
 import {request} from '@rest/request/index'
-import {GlobalRequestExchanges} from '@rest/request/exchanges/request'
-import {GlobalResponseExchanges} from '@rest/request/exchanges/response'
+import {RequestExchange} from '@rest/request/exchanges/request'
+import {ResponseExchange} from '@rest/request/exchanges/response'
 
 global.fetch = jest.fn()
 
@@ -74,17 +74,20 @@ describe('request', () => {
 
     ;(fetch as jest.Mock).mockResolvedValueOnce(mockResponse)
 
-    GlobalRequestExchanges.add((a) => {
+    const requestExchange: RequestExchange = (init) => {
       return {
-        ...a,
+        ...init,
         headers: {
           authorization: 'token',
         },
       }
-    })
+    }
 
     const [response, result] = await request({
       url: MOCK_URL,
+      exchanges: {
+        request: [requestExchange],
+      },
       options: {
         method: 'GET',
         headers: {
@@ -113,17 +116,20 @@ describe('request', () => {
 
     ;(fetch as jest.Mock).mockResolvedValueOnce(mockResponse)
 
-    GlobalRequestExchanges.add(async (req) => {
+    const requestExchange: RequestExchange = async (req) => {
       return {
         ...req,
         headers: {
           async_authorization: 'token',
         },
       }
-    })
+    }
 
     const [response, result] = await request({
       url: MOCK_URL,
+      exchanges: {
+        request: [requestExchange],
+      },
       options: {
         method: 'GET',
         headers: {
@@ -152,12 +158,15 @@ describe('request', () => {
 
     ;(fetch as jest.Mock).mockResolvedValueOnce(mockResponse)
 
-    GlobalResponseExchanges.add(([response]) => {
+    const responseExchange: ResponseExchange = ([response]) => {
       return [response, 'test']
-    })
+    }
 
     const [response, result] = await request({
       url: MOCK_URL,
+      exchanges: {
+        response: [responseExchange],
+      },
       options: {
         method: 'GET',
         headers: {
@@ -166,7 +175,6 @@ describe('request', () => {
       },
     })
 
-    console.log(response)
     expect(response.ok).toBe(true) // Проверяем ключевые свойства ответа
     expect(result).toEqual('test') // Проверяем данные
   })

@@ -10,6 +10,8 @@ enum HttpContentType {
   JSON = 'application/json',
   /** PDF-контент */
   PDF = 'application/pdf',
+  /* Календарь */
+  CALENDAR = 'text/calendar',
 }
 
 /**
@@ -33,6 +35,9 @@ const CONTENT_TYPE_METHODS: Record<HttpContentType, {method: ResponseMethods}> =
       method: 'json',
     },
     [HttpContentType.PDF]: {
+      method: 'blob',
+    },
+    [HttpContentType.CALENDAR]: {
       method: 'blob',
     },
   }

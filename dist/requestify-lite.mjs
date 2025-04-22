@@ -1,4 +1,11 @@
-const A = {
+const I = (E) => Array.isArray(E) && E[0] instanceof Response, D = (E, T) => {
+  if (I(E)) {
+    const [O] = E, R = O.status, _ = T?.[R];
+    if (_)
+      throw _(E);
+  }
+  throw E;
+}, U = {
   "text/html": {
     method: "text"
   },
@@ -10,41 +17,45 @@ const A = {
   },
   "application/pdf": {
     method: "blob"
+  },
+  "text/calendar": {
+    method: "blob"
   }
-}, I = (E) => {
+}, L = (E) => {
   const T = E.headers.get("content-type")?.split(";")[0];
   return T || null;
-}, D = async (E) => {
-  const T = I(E);
+}, n = async (E) => {
+  const T = L(E);
   if (!T)
     return Promise.resolve([E, void 0]);
-  const { method: _ } = A[T], O = E.clone();
-  return O[_]().then((R) => [O, R]);
-}, U = (E) => Array.isArray(E) && E[0] instanceof Response, L = /* @__PURE__ */ new Map(), P = (E, T) => {
-  if (U(E)) {
-    const [_] = E, O = _.status, R = T?.[O];
-    if (R)
-      throw R(E);
-    const N = L.get(O);
-    if (N)
-      throw N(E);
-  }
-  throw E;
-}, n = (E) => {
+  const { method: O } = U[T], R = E.clone();
+  return R[O]().then((_) => [R, _]);
+};
+async function A(E, T) {
+  let O = T;
+  for (const R of E)
+    O = await R(O);
+  return O;
+}
+const P = (E) => {
   const [T] = E;
   if (T.ok)
     return E;
   throw E;
-}, c = ({
+};
+async function c({
   url: E,
   options: T,
-  errorHandlers: _
-}) => fetch(E, T).then(D).then(n).catch(
-  (O) => P(O, _)
-);
+  exchanges: O,
+  errorHandlers: R
+}) {
+  let _ = { ...T };
+  return _ && O?.request && (_ = await A(O.request, _)), fetch(E, _).then(n).then(P).then(async (N) => O?.response ? await A(O.response, N) : N).catch(
+    (N) => D(N, R)
+  );
+}
 var M = /* @__PURE__ */ ((E) => (E[E.CONTINUE = 100] = "CONTINUE", E[E.SWITCHING_PROTOCOLS = 101] = "SWITCHING_PROTOCOLS", E[E.PROCESSING = 102] = "PROCESSING", E[E.OK = 200] = "OK", E[E.CREATED = 201] = "CREATED", E[E.ACCEPTED = 202] = "ACCEPTED", E[E.NON_AUTHORITATIVE_INFORMATION = 203] = "NON_AUTHORITATIVE_INFORMATION", E[E.NO_CONTENT = 204] = "NO_CONTENT", E[E.RESET_CONTENT = 205] = "RESET_CONTENT", E[E.PARTIAL_CONTENT = 206] = "PARTIAL_CONTENT", E[E.MULTI_STATUS = 207] = "MULTI_STATUS", E[E.ALREADY_REPORTED = 208] = "ALREADY_REPORTED", E[E.IM_USED = 226] = "IM_USED", E[E.MULTIPLE_CHOICES = 300] = "MULTIPLE_CHOICES", E[E.MOVED_PERMANENTLY = 301] = "MOVED_PERMANENTLY", E[E.FOUND = 302] = "FOUND", E[E.SEE_OTHER = 303] = "SEE_OTHER", E[E.NOT_MODIFIED = 304] = "NOT_MODIFIED", E[E.USE_PROXY = 305] = "USE_PROXY", E[E.SWITCH_PROXY = 306] = "SWITCH_PROXY", E[E.TEMPORARY_REDIRECT = 307] = "TEMPORARY_REDIRECT", E[E.PERMANENT_REDIRECT = 308] = "PERMANENT_REDIRECT", E[E.BAD_REQUEST = 400] = "BAD_REQUEST", E[E.UNAUTHORIZED = 401] = "UNAUTHORIZED", E[E.PAYMENT_REQUIRED = 402] = "PAYMENT_REQUIRED", E[E.FORBIDDEN = 403] = "FORBIDDEN", E[E.NOT_FOUND = 404] = "NOT_FOUND", E[E.METHOD_NOT_ALLOWED = 405] = "METHOD_NOT_ALLOWED", E[E.NOT_ACCEPTABLE = 406] = "NOT_ACCEPTABLE", E[E.PROXY_AUTHENTICATION_REQUIRED = 407] = "PROXY_AUTHENTICATION_REQUIRED", E[E.REQUEST_TIMEOUT = 408] = "REQUEST_TIMEOUT", E[E.CONFLICT = 409] = "CONFLICT", E[E.GONE = 410] = "GONE", E[E.LENGTH_REQUIRED = 411] = "LENGTH_REQUIRED", E[E.PRECONDITION_FAILED = 412] = "PRECONDITION_FAILED", E[E.PAYLOAD_TOO_LARGE = 413] = "PAYLOAD_TOO_LARGE", E[E.URI_TOO_LONG = 414] = "URI_TOO_LONG", E[E.UNSUPPORTED_MEDIA_TYPE = 415] = "UNSUPPORTED_MEDIA_TYPE", E[E.RANGE_NOT_SATISFIABLE = 416] = "RANGE_NOT_SATISFIABLE", E[E.EXPECTATION_FAILED = 417] = "EXPECTATION_FAILED", E[E.I_AM_A_TEAPOT = 418] = "I_AM_A_TEAPOT", E[E.MISDIRECTED_REQUEST = 421] = "MISDIRECTED_REQUEST", E[E.UNPROCESSABLE_ENTITY = 422] = "UNPROCESSABLE_ENTITY", E[E.LOCKED = 423] = "LOCKED", E[E.FAILED_DEPENDENCY = 424] = "FAILED_DEPENDENCY", E[E.UPGRADE_REQUIRED = 426] = "UPGRADE_REQUIRED", E[E.PRECONDITION_REQUIRED = 428] = "PRECONDITION_REQUIRED", E[E.TOO_MANY_REQUESTS = 429] = "TOO_MANY_REQUESTS", E[E.REQUEST_HEADER_FIELDS_TOO_LARGE = 431] = "REQUEST_HEADER_FIELDS_TOO_LARGE", E[E.UNAVAILABLE_FOR_LEGAL_REASONS = 451] = "UNAVAILABLE_FOR_LEGAL_REASONS", E[E.INTERNAL_SERVER_ERROR = 500] = "INTERNAL_SERVER_ERROR", E[E.NOT_IMPLEMENTED = 501] = "NOT_IMPLEMENTED", E[E.BAD_GATEWAY = 502] = "BAD_GATEWAY", E[E.SERVICE_UNAVAILABLE = 503] = "SERVICE_UNAVAILABLE", E[E.GATEWAY_TIMEOUT = 504] = "GATEWAY_TIMEOUT", E[E.HTTP_VERSION_NOT_SUPPORTED = 505] = "HTTP_VERSION_NOT_SUPPORTED", E[E.VARIANT_ALSO_NEGOTIATES = 506] = "VARIANT_ALSO_NEGOTIATES", E[E.INSUFFICIENT_STORAGE = 507] = "INSUFFICIENT_STORAGE", E[E.LOOP_DETECTED = 508] = "LOOP_DETECTED", E[E.NOT_EXTENDED = 510] = "NOT_EXTENDED", E[E.NETWORK_AUTHENTICATION_REQUIRED = 511] = "NETWORK_AUTHENTICATION_REQUIRED", E))(M || {});
 export {
-  L as GlobalErrorHandlers,
   M as HttpStatusCode,
   c as request
 };

@@ -1,1 +1,8 @@
-export declare const parse: (response: Response) => Promise<readonly [Response, any]>;
+/**
+ * Парсит тело ответа на основе его типа контента.
+ * В зависимости от типа контента выполняет вызов метода `text()`, `json()` или `blob()` на объекте Response.
+ *
+ * @param response Ответ от сервера.
+ * @returns Промис, который разрешается в массив с клонированным ответом и обработанным значением.
+ */
+export declare const parse: (response: Response) => Promise<[Response, any]>;

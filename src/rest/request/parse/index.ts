@@ -77,9 +77,13 @@ export const parse = async (response: Response): Promise<[Response, any]> => {
     return Promise.resolve([response, undefined] as const)
   }
 
-  const {method} = CONTENT_TYPE_METHODS[contentType]
+  const config = CONTENT_TYPE_METHODS[contentType]
+
+  if (!config) {
+    return Promise.resolve([response, undefined] as const)
+  }
 
   const clone = response.clone()
 
-  return clone[method]().then((value) => [clone, value] as const)
+  return clone[config.method]().then((value) => [clone, value] as const)
 }

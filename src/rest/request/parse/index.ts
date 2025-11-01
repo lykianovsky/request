@@ -12,6 +12,7 @@ enum HttpContentType {
   PDF = 'application/pdf',
   /* Календарь */
   CALENDAR = 'text/calendar',
+  EXECEL = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 }
 
 /**
@@ -38,6 +39,9 @@ const CONTENT_TYPE_METHODS: Record<HttpContentType, {method: ResponseMethods}> =
       method: 'blob',
     },
     [HttpContentType.CALENDAR]: {
+      method: 'blob',
+    },
+    [HttpContentType.EXECEL]: {
       method: 'blob',
     },
   }

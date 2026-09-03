@@ -1,6 +1,6 @@
 {
   "name": "requestify-lite",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "main": "./dist/requestify-lite.mjs",
   "module": "./dist/requestify-lite.mjs",
   "types": "./dist/index.d.ts",

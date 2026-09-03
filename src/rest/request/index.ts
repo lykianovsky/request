@@ -1,6 +1,6 @@
 import {StatusHandlersMap} from '@rest/request/interceptions/catch/global-handler'
 import {interceptCatch} from '@rest/request/interceptions/catch'
-import {parse} from '@rest/request/parse'
+import {parse, ResponseMethods} from '@rest/request/parse'
 import {executeExchanges} from '@rest/request/exchanges'
 import {RequestExchange} from '@rest/request/exchanges/request'
 import {ResponseExchange} from '@rest/request/exchanges/response'
@@ -31,6 +31,11 @@ type RequestArguments = {
   url: URL
   /** Опции запроса, которые могут включать заголовки, метод и другие параметры */
   options?: RequestInit
+  /**
+   * Метод парсинга ответа (`text`, `json`, `blob`).
+   * Если указан, ответ парсится именно им, независимо от заголовка `content-type`.
+   */
+  responseParsingMethod?: ResponseMethods
   /** Маппинг обработчиков ошибок по статусу, которые будут вызваны при ошибке */
   errorHandlers?: StatusHandlersMap
   exchanges?: {
@@ -44,6 +49,7 @@ type RequestArguments = {
  *
  * @param url URL для выполнения запроса.
  * @param options Опции запроса, такие как метод, заголовки и другие параметры.
+ * @param responseParsingMethod Метод парсинга ответа (`text`, `json`, `blob`). Переопределяет определение по заголовку `content-type`.
  * @param errorHandlers Маппинг обработчиков ошибок для различных HTTP-статусных кодов.
  * @param exchanges Маппинг обработчиков, которые будут изменять данные RequestInit (перед выполнением) либо Response (после выполнения)
  *
@@ -82,6 +88,7 @@ type RequestArguments = {
 export async function request<T>({
   url,
   options,
+  responseParsingMethod,
   exchanges,
   errorHandlers,
 }: RequestArguments): Promise<HttpRequestParameters<T>> {
@@ -92,7 +99,7 @@ export async function request<T>({
   }
 
   return fetch(url, cloneOptions)
-    .then(parse)
+    .then((response) => parse(response, responseParsingMethod))
     .then(decide)
     .then(async (response) => {
       if (exchanges?.response) {
@@ -105,3 +112,4 @@ export async function request<T>({
       interceptCatch(error, errorHandlers),
     )
 }
+

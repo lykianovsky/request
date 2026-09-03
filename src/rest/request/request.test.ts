@@ -33,6 +33,27 @@ describe('request', () => {
     expect(result).toEqual(mockBody) // Проверяем данные
   })
 
+  it('parses response with explicit responseParsingMethod', async () => {
+    const mockBody = {data: 'success'}
+
+    // Сервер прислал text/plain, но парсим явно как json
+    const mockResponse = new Response(JSON.stringify(mockBody), {
+      status: 200,
+      headers: {'Content-Type': 'text/plain'},
+    })
+
+    ;(fetch as jest.Mock).mockResolvedValueOnce(mockResponse)
+
+    const [response, result] = await request({
+      url: MOCK_URL,
+      options: {method: 'GET'},
+      responseParsingMethod: 'json',
+    })
+
+    expect(response.ok).toBe(true)
+    expect(result).toEqual(mockBody)
+  })
+
   it('handles error response', async () => {
     const mockResponse = new Response(null, {status: 404})
 

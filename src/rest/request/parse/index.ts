@@ -13,12 +13,14 @@ enum HttpContentType {
   /* Календарь */
   CALENDAR = 'text/calendar',
   EXECEL = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  /** CSV-файл */
+  CSV = 'text/csv',
 }
 
 /**
  * Типы методов, доступных у объекта Response для различных типов контента.
  */
-type ResponseMethods = keyof Pick<Response, 'text' | 'blob' | 'json'>
+export type ResponseMethods = keyof Pick<Response, 'text' | 'blob' | 'json'>
 
 /**
  * Маппинг типов контента на соответствующие методы объекта Response.
@@ -42,6 +44,9 @@ const CONTENT_TYPE_METHODS: Record<HttpContentType, {method: ResponseMethods}> =
       method: 'blob',
     },
     [HttpContentType.EXECEL]: {
+      method: 'blob',
+    },
+    [HttpContentType.CSV]: {
       method: 'blob',
     },
   }
@@ -68,22 +73,39 @@ const getContentType = (response: Response): HttpContentType | null => {
  * В зависимости от типа контента выполняет вызов метода `text()`, `json()` или `blob()` на объекте Response.
  *
  * @param response Ответ от сервера.
+ * @param responseParsingMethod Метод, которым нужно распарсить ответ (`text`, `json`, `blob`).
+ *  Если указан, используется он, независимо от заголовка `content-type`.
  * @returns Промис, который разрешается в массив с клонированным ответом и обработанным значением.
  */
-export const parse = async (response: Response): Promise<[Response, any]> => {
-  const contentType = getContentType(response)
+export const parse = async (
+  response: Response,
+  responseParsingMethod?: ResponseMethods,
+): Promise<[Response, any]> => {
+  const method = responseParsingMethod ?? resolveMethodByContentType(response)
 
-  if (!contentType) {
-    return Promise.resolve([response, undefined] as const)
-  }
-
-  const config = CONTENT_TYPE_METHODS[contentType]
-
-  if (!config) {
+  if (!method) {
     return Promise.resolve([response, undefined] as const)
   }
 
   const clone = response.clone()
 
-  return clone[config.method]().then((value) => [clone, value] as const)
+  return clone[method]().then((value) => [clone, value] as const)
+}
+
+/**
+ * Определяет метод парсинга ответа по заголовку `content-type`.
+ *
+ * @param response Ответ от сервера.
+ * @returns Метод для парсинга, либо `null`, если тип контента не распознан.
+ */
+const resolveMethodByContentType = (
+  response: Response,
+): ResponseMethods | null => {
+  const contentType = getContentType(response)
+
+  if (!contentType) {
+    return null
+  }
+
+  return CONTENT_TYPE_METHODS[contentType]?.method ?? null
 }
